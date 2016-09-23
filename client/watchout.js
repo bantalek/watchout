@@ -1,5 +1,8 @@
 // start slingin' some d3 here.
 
+var curScore = 0;
+var highScore = 0;
+
 var svg = d3.select('svg');
 
 var circles = d3.range(10).map(function() {
@@ -16,10 +19,30 @@ svg.selectAll('circle')
     .attr('cx', function(d) { return d.x; })
     .attr('cy', function(d) { return d.y; })
     .attr('r', 15)
+    .classed('asteroid', true)
     .style('fill', 'white');
 
 var dragged = function(d) {
-  console.log('dx = ' + d3.event.x + ' dy = ' + d3.event.y);
+  //make sure the mouse is in bounds horizontally
+  if (d3.event.x <= 15 || d3.event.x >= 585) {
+    return;
+  }
+  //make sure the mouse is in bounds vertically
+  if (d3.event.y <= 15 || d3.event.y >= 485) {
+    return;
+  }
+
+  //check for collisions
+  var checkCollisions = function() {
+    var asteroids = svg.selectAll('.asteroid');
+    console.log(asteroids);
+    for (var i = 0; i < asteroids[0].length; i++) {
+      console.log(asteroids[0][i].cx);
+    }
+  };
+
+  checkCollisions();
+  //move the mouse circle
   d3.select(this).attr('cx', d3.event.x).attr('cy', d3.event.y);
 };
 
@@ -27,3 +50,7 @@ var drag = d3.behavior.drag().on('drag', dragged);
 
 d3.select('.mouse')
   .call(drag);
+
+var timer = d3.timer(function(elapsed) {
+
+}, 1000);
