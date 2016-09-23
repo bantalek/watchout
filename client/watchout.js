@@ -33,14 +33,16 @@ var moveCircles = function() {
 };
 
 //start by placing 10 randomly placed circles onto the board
-svg.selectAll('circle')
+svg.selectAll('image')
   .data(circles)
-  .enter().append('circle')
-    .attr('cx', function(d) { return d.x; })
-    .attr('cy', function(d) { return d.y; })
-    .attr('r', 15)
-    .classed('asteroid', true)
-    .style('fill', 'white');
+  .enter().append('image')
+    .attr('xlink:href', 'bullet.png')
+    .attr('x', function(d) { return d.x; })
+    .attr('y', function(d) { return d.y; })
+    .attr('width', 30)
+    .attr('height', 21)
+    .attr('visibility', 'visible')
+    .classed('asteroid', true);
 
 var date = new Date();
 var lastCollisionTime = date.getTime();
@@ -61,8 +63,8 @@ var dragged = function(d) {
   var checkCollisions = function() {
     var asteroids = d3.select('svg').selectAll('.asteroid');
     for (var i = 0; i < asteroids[0].length; i++) {
-      var asteroidX = asteroids[0][i].cx.baseVal.value;
-      var asteroidY = asteroids[0][i].cy.baseVal.value;
+      var asteroidX = asteroids[0][i].x.baseVal.value;
+      var asteroidY = asteroids[0][i].y.baseVal.value;
       if ((Math.abs(asteroidX - mouseX) <= 30) && (Math.abs(asteroidY - mouseY) <= 30)) {
         curScore = 0;
         date = new Date();
@@ -82,7 +84,7 @@ var dragged = function(d) {
 
 var drag = d3.behavior.drag().on('drag', dragged);
 
-d3.select('.mouse')
+d3.select('svg').select('.mouse')
   .call(drag);
 
 var update = function(data) {
@@ -93,10 +95,8 @@ var update = function(data) {
     .remove();
 
   //Update old elements present in new data
-  svg.transition(3000).attr('cx', function(d) { return d.x; })
-    .attr('cy', function(d) { return d.y; })
-    .attr('r', 15)
-    .style('fill', 'white');
+  svg.transition(3000).attr('x', function(d) { return d.x; })
+    .attr('y', function(d) { return d.y; });
 
   svg.classed('asteroid', true);
 
@@ -128,9 +128,3 @@ setInterval(function() {
   update(circles);
 }, 100);
 
-/*
-var timer = d3.setInterval(function(elapsed) {
-  var newCircles = makeCircles();
-  update(newCircles);
-}, 1000);
-*/
