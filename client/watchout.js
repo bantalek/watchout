@@ -2,19 +2,35 @@
 
 var curScore = 0;
 var highScore = 0;
-
+var collisions = 0;
 var svg = d3.select('svg');
 
 var makeCircles = function() {
-  return d3.range(10).map(function() {
+  return d3.range(20).map(function(elem, index) {
     return {
       x: Math.floor(Math.random() * 600),
       y: Math.floor(Math.random() * 500),
+      i: index
     };
   });
 };
 
 var circles = makeCircles();
+
+var moveCircles = function() {
+  for (var i = 0; i < circles.length; i++) {
+    var xOffset = (Math.random() * 100) - 50;
+    var yOffset = (Math.random() * 100) - 50;
+
+    if ((circles[i].x + xOffset > 0) && (circles[i].x + xOffset < 600)) {
+      circles[i].x += xOffset;
+    }
+
+    if ((circles[i].y + yOffset > 0) && (circles[i].y + yOffset < 500)) {
+      circles[i].y += yOffset;
+    }
+  }
+};
 
 //start by placing 10 randomly placed circles onto the board
 svg.selectAll('circle')
@@ -25,6 +41,9 @@ svg.selectAll('circle')
     .attr('r', 15)
     .classed('asteroid', true)
     .style('fill', 'white');
+
+var date = new Date();
+var lastCollisionTime = date.getTime();
 
 var dragged = function(d) {
   //make sure the mouse is in bounds horizontally
@@ -44,8 +63,14 @@ var dragged = function(d) {
     for (var i = 0; i < asteroids[0].length; i++) {
       var asteroidX = asteroids[0][i].cx.baseVal.value;
       var asteroidY = asteroids[0][i].cy.baseVal.value;
-      if ((Math.abs(asteroidX - mouseX) <= 15) && (Math.abs(asteroidY - mouseY) <= 15)) {
-        console.log('crash');
+      if ((Math.abs(asteroidX - mouseX) <= 30) && (Math.abs(asteroidY - mouseY) <= 30)) {
+        curScore = 0;
+        date = new Date();
+        if (date.getTime() - lastCollisionTime > 500) {
+          collisions += 1;
+          d3.select('.collisions').select('span').text(collisions);
+          lastCollisionTime = date.getTime();
+        }
       }
     }
   };
@@ -61,33 +86,51 @@ d3.select('.mouse')
   .call(drag);
 
 var update = function(data) {
-  console.log('!');
-  var svg = d3.select('svg').selectAll('circle').data(data, function(d) { return d.x + d.y; });
+  var svg = d3.select('svg').selectAll('.asteroid').data(data, function(d) { return d.i; });
 
   //exit old elements not present in new data
   svg.exit()
     .remove();
 
   //Update old elements present in new data
-  svg.attr('cx', function(d) { return d.x; })
+  svg.transition(3000).attr('cx', function(d) { return d.x; })
     .attr('cy', function(d) { return d.y; })
     .attr('r', 15)
-    .classed('asteroid', true)
     .style('fill', 'white');
 
+  svg.classed('asteroid', true);
+
+
   //enter new elements
+  /*
   svg.enter().append('circle')
     .attr('cx', function(d) { return d.x; })
     .attr('cy', function(d) { return d.y; })
     .attr('r', 15)
     .classed('asteroid', true)
     .style('fill', 'white');
+  */
 
 
 
 };
 
-var timer = d3.timer(function(elapsed) {
+setInterval(function() {
+  //var newCircles = makeCircles();
+  //update(newCircles); 
+  curScore += 1;
+  d3.select('.current').select('span').text(curScore);
+  if (curScore > highScore) {
+    highScore = curScore;
+    d3.select('.highscore').select('span').text(highScore);
+  }
+  moveCircles();
+  update(circles);
+}, 100);
+
+/*
+var timer = d3.setInterval(function(elapsed) {
   var newCircles = makeCircles();
   update(newCircles);
-}, 500);
+}, 1000);
+*/
