@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel='stylesheet' type='css' href='styles.css'>
+    <link rel='stylesheet' type='text/css' href='styles.css'>
   </head>
   <body>
     <div class="scoreboard">
@@ -10,7 +10,12 @@
       <div class="current">Current score: <span>0</span></div>
       <div class="collisions">Collisions: <span>0</span></div>
     </div>
-    <div class="board"><div class="mouse"></div></div>
+    <div class="board">
+      <svg class="gameBox" width="600" height="500">
+        <rect x="0" y="0" width="600" height="500" style="fill:rgb(0,0,0);stroke-width:0;stroke:rgb(0,0,0)" />
+        <circle class="mouse" cx="300" cy="250" r="15" style="fill:red"></circle>
+      </svg>
+    </div>
     <script src="lib/d3.js" charset="utf-8"></script>
     <script src='watchout.js'></script>
   </body>
