@@ -3,6 +3,7 @@
 var curScore = 0;
 var highScore = 0;
 var collisions = 0;
+var gameStarted = false;
 var svg = d3.select('svg');
 
 var makeCircles = function() {
@@ -48,9 +49,11 @@ var date = new Date();
 var lastCollisionTime = date.getTime();
 
 var dragged = function(d) {
+  gameStarted = true;
   //make sure the mouse is in bounds horizontally
   var mouseX = d3.event.x;
   var mouseY = d3.event.y;
+  console.log('!!!!');
   if (mouseX <= 15 || mouseX >= 585) {
     return;
   }
@@ -79,7 +82,7 @@ var dragged = function(d) {
 
   checkCollisions();
   //move the mouse circle
-  d3.select(this).attr('cx', d3.event.x).attr('cy', d3.event.y);
+  d3.select(this).attr('x', d3.event.x).attr('y', d3.event.y);
 };
 
 var drag = d3.behavior.drag().on('drag', dragged);
@@ -127,6 +130,9 @@ var update = function(data) {
 setInterval(function() {
   //var newCircles = makeCircles();
   //update(newCircles); 
+  if (!gameStarted) {
+    return;
+  }
   curScore += 1;
   d3.select('.current').select('span').text(curScore);
   if (curScore > highScore) {
@@ -135,4 +141,4 @@ setInterval(function() {
   }
   moveCircles();
   update(circles);
-}, 100);
+}, 150);
