@@ -16,7 +16,7 @@ var makeCircles = function() {
 };
 
 var circles = makeCircles();
-
+var flipped = false;
 var moveCircles = function() {
   for (var i = 0; i < circles.length; i++) {
     var xOffset = (Math.random() * 100) - 50;
@@ -36,11 +36,11 @@ var moveCircles = function() {
 svg.selectAll('image')
   .data(circles)
   .enter().append('image')
-    .attr('xlink:href', 'bullet.png')
+    .attr('xlink:href', 'bullet0.png')
     .attr('x', function(d) { return d.x; })
     .attr('y', function(d) { return d.y; })
     .attr('width', 30)
-    .attr('height', 21)
+    .attr('height', 30)
     .attr('visibility', 'visible')
     .classed('asteroid', true);
 
@@ -94,9 +94,18 @@ var update = function(data) {
   svg.exit()
     .remove();
 
+  flipped = !flipped;
+
+  
   //Update old elements present in new data
-  svg.transition(3000).attr('x', function(d) { return d.x; })
+  svg.transition(90).attr('x', function(d) { return d.x; })
     .attr('y', function(d) { return d.y; });
+
+  if (flipped) {
+    svg.attr('href', 'bullet1.png');
+  } else {
+    svg.attr('href', 'bullet0.png');
+  }
 
   svg.classed('asteroid', true);
 
@@ -127,4 +136,3 @@ setInterval(function() {
   moveCircles();
   update(circles);
 }, 100);
-
