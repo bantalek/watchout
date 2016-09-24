@@ -1,148 +1,80 @@
-// start slingin' some d3 here.
-
-var curScore = 0;
-var highScore = 0;
-var collisions = 0;
-var gameStarted = false;
 var svg = d3.select('svg');
 
-var makeCircles = function() {
-  return d3.range(20).map(function(elem, index) {
+var makeCircle = function(d) {
+  return d3.range(10).map(function(elem, index) {
     return {
-      x: Math.floor(Math.random() * 600),
-      y: Math.floor(Math.random() * 500),
-      i: index
-    };
-  });
-};
-
-var circles = makeCircles();
-var flipped = false;
-var moveCircles = function() {
-  for (var i = 0; i < circles.length; i++) {
-    var xOffset = (Math.random() * 100) - 50;
-    var yOffset = (Math.random() * 100) - 50;
-
-    if ((circles[i].x + xOffset > 0) && (circles[i].x + xOffset < 600)) {
-      circles[i].x += xOffset;
+      x : Math.random() * 600,
+      y : Math.random() * 500,
+      i : index
     }
+  }) 
+}
 
-    if ((circles[i].y + yOffset > 0) && (circles[i].y + yOffset < 500)) {
-      circles[i].y += yOffset;
-    }
-  }
-};
 
-//start by placing 10 randomly placed circles onto the board
-svg.selectAll('image')
+// right a function to generate an array length n where each node
+// contains coordinate data 
+
+var circles = makeCircle();
+
+// d3selectsSvg to pump coordinate data to selectAll circle elements
+// enter() new data with .data(circles).enter()
+// append all circles to circle element in DOM and set attributes for
+// coordinates, size, and color
+
+svg.selectAll('circle')
   .data(circles)
-  .enter().append('image')
-    .attr('xlink:href', 'bullet0.png')
-    .attr('x', function(d) { return d.x; })
-    .attr('y', function(d) { return d.y; })
-    .attr('width', 30)
-    .attr('height', 30)
-    .attr('visibility', 'visible')
-    .classed('asteroid', true);
+  .enter().append('circle')
+    .attr('cx', function(d) {return d.x})
+    .attr('cy', function(d) {return d.y})
+    .attr('r', '15')
+    .attr('style', 'fill:red')
 
-var date = new Date();
-var lastCollisionTime = date.getTime();
 
-var dragged = function(d) {
-  gameStarted = true;
-  //make sure the mouse is in bounds horizontally
-  var mouseX = d3.event.x;
-  var mouseY = d3.event.y;
-
-  if (mouseX <= 15 || mouseX >= 585) {
-    return;
-  }
-  //make sure the mouse is in bounds vertically
-  if (mouseY <= 15 || mouseY >= 485) {
-    return;
-  }
-
-  //check for collisions
-  var checkCollisions = function() {
-    var asteroids = d3.select('svg').selectAll('.asteroid');
-    for (var i = 0; i < asteroids[0].length; i++) {
-      var asteroidX = asteroids[0][i].x.baseVal.value;
-      var asteroidY = asteroids[0][i].y.baseVal.value;
-      if ((Math.abs(asteroidX - mouseX) <= 30) && (Math.abs(asteroidY - mouseY) <= 30)) {
-        curScore = 0;
-        date = new Date();
-        if (date.getTime() - lastCollisionTime > 500) {
-          collisions += 1;
-          d3.select('.collisions').select('span').text(collisions);
-          lastCollisionTime = date.getTime();
-        }
-      }
+// allow circles to move 
+// create a move circle function that commands svg to 
+// pump new circle data into all existing entries
+var newXCoords = function (d) {
+    var linearScale = d3.scale.linear()
+                     .domain([-600,1200])
+                     .range([0,600])
+    if(Math.random() < .5) {
+      var newCoord = d.x + Math.random() * 600;
+    } else {
+      var newCoord = d.x - Math.random() * 600;
     }
-  };
+    return linearScale([newCoord]);
+}
 
-  checkCollisions();
-  //move the mouse circle
-  d3.select(this).attr('x', d3.event.x).attr('y', d3.event.y);
-};
+var newYCoords = function(d) { 
+  var linearScale = d3.scale.linear()
+                     .domain([-600,1000])
+                     .range([0,500])
+    if(Math.random() < .5) {
+      var newCoord = d.y + Math.random() * 500;
+    } else {
+      var newCoord = d.y - Math.random() * 500;
+    }
 
-var dragFinished = function(d) {
-  gameStarted = false;
-};
+  return linearScale([newCoord]);
+}
+function moveCircles() {
+  // DATA JOIN
+  // Join new data with old elements, if any.
+  var selection = svg.selectAll("circle")
+    .data(circles);
 
-var drag = d3.behavior.drag().on('drag', dragged).on('dragend', dragFinished);
-
-d3.select('svg').select('.mouse')
-  .call(drag);
-
-var update = function(data) {
-  var svg = d3.select('svg').selectAll('.asteroid').data(data, function(d) { return d.i; });
-
-  //exit old elements not present in new data
-  svg.exit()
-    .remove();
-
-  flipped = !flipped;
-
-  
-  //Update old elements present in new data
-  svg.transition(90).attr('x', function(d) { return d.x; })
-    .attr('y', function(d) { return d.y; });
-
-  if (flipped) {
-    svg.attr('href', 'bullet1.png');
-  } else {
-    svg.attr('href', 'bullet0.png');
-  }
-
-  svg.classed('asteroid', true);
-
-
-  //enter new elements
-  /*
-  svg.enter().append('circle')
-    .attr('cx', function(d) { return d.x; })
-    .attr('cy', function(d) { return d.y; })
-    .attr('r', 15)
-    .classed('asteroid', true)
-    .style('fill', 'white');
-  */
-
-
-
-};
-
+  // UPDATE
+  // Update old elements as needed.
+  selection.transition()
+    .duration(1000).attr("class", "update")
+  .attr('style', 'fill:purple')
+  .attr("cx", function(d) {return newXCoords(d)})
+  .attr("cy", function(d) {return newYCoords(d)})
+  // EXIT
+  // Remove old elements as needed.
+  // selection.exit().remove();
+}
 setInterval(function() {
-  //var newCircles = makeCircles();
-  //update(newCircles); 
-  if (!gameStarted) {
-    return;
-  }
-  curScore += 1;
-  d3.select('.current').select('span').text(curScore);
-  if (curScore > highScore) {
-    highScore = curScore;
-    d3.select('.highscore').select('span').text(highScore);
-  }
   moveCircles();
-  update(circles);
-}, 150);
+}, 2000)
+
