@@ -53,7 +53,7 @@ var dragged = function(d) {
   //make sure the mouse is in bounds horizontally
   var mouseX = d3.event.x;
   var mouseY = d3.event.y;
-  console.log('!!!!');
+
   if (mouseX <= 15 || mouseX >= 585) {
     return;
   }
@@ -85,7 +85,11 @@ var dragged = function(d) {
   d3.select(this).attr('x', d3.event.x).attr('y', d3.event.y);
 };
 
-var drag = d3.behavior.drag().on('drag', dragged);
+var dragFinished = function(d) {
+  gameStarted = false;
+};
+
+var drag = d3.behavior.drag().on('drag', dragged).on('dragend', dragFinished);
 
 d3.select('svg').select('.mouse')
   .call(drag);
